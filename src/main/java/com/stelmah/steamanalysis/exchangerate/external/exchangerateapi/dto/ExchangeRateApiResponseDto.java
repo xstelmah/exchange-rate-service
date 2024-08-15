@@ -34,6 +34,9 @@ public class ExchangeRateApiResponseDto {
     @JsonProperty("base_code")
     private String baseCode;
 
+    @JsonProperty("error-type") // why not a snake_case??? Lol
+    private String errorType;
+
     @JsonProperty("conversion_rates")
     private Map<String, BigDecimal> conversionRates = new HashMap<>();
 

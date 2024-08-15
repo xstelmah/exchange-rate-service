@@ -16,7 +16,7 @@ public class ExchangeRateScheduler {
     private final ExchangeRateService exchangeRateService;
 
     @Scheduled(cron = "${exchange.rate.scheduler.cron}")
-    @SchedulerLock(name = "fetchLatestExchangeRatesLock")
+    @SchedulerLock(name = "fetchLatestExchangeRatesLock", lockAtLeastFor = "PT15S", lockAtMostFor = "PT30S")
     public void fetchLatestExchangeRatesTask() {
         try {
             exchangeRateService.fetchLatestExchangeRates();

@@ -3,6 +3,13 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  flyway:
+    url:  ${SPRING_FLYWAY_URL}
+    user: ${SPRING_FLYWAY_USER}
+    password: ${SPRING_FLYWAY_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
 exchange:
   rate:
     api:
@@ -20,9 +27,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/exchange_rate
     username: user1
     password: user1
+  flyway:
+    url: jdbc:postgresql://localhost:5432/exchange_rate
+    user: user1
+    password: user1
   jpa:
-    hibernate:
-      ddl-auto: update
     show-sql: true
 #    properties:
 #      hibernate:
