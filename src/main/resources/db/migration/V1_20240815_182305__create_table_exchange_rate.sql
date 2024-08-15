@@ -1,12 +1,12 @@
-CREATE SEQUENCE s_exchange_rate_id
+CREATE SEQUENCE t_exchange_rate_seq
     START WITH 1
-    INCREMENT BY 1
+    INCREMENT BY 25
     NO MINVALUE
-    NO MAXVALUE CACHE 1;
+    NO MAXVALUE CACHE 25;
 
 CREATE TABLE t_exchange_rate
 (
-    id              BIGINT PRIMARY KEY DEFAULT nextval('s_exchange_rate_id'),
+    id              BIGINT PRIMARY KEY DEFAULT nextval('t_exchange_rate_seq'),
     base_currency   VARCHAR(255)   NOT NULL,
     target_currency VARCHAR(255)   NOT NULL,
     rate            DECIMAL(19, 4) NOT NULL,

@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +24,8 @@ import java.time.LocalDateTime;
 public class ExchangeRate {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "t_exchange_rate_seq_generator")
+    @SequenceGenerator(name = "t_exchange_rate_seq_generator", sequenceName = "t_exchange_rate_seq", allocationSize = 25)
     private Long id;
 
     @Column(nullable = false)

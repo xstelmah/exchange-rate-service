@@ -21,7 +21,7 @@ import java.util.List;
 public class ExchangeRateSnapshot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // in reality we have a sequence
     private Long id;
 
     private LocalDateTime vendorTimestamp;

@@ -9,6 +9,7 @@ import com.stelmah.steamanalysis.exchangerate.mapper.ExchangeRateMapper;
 import com.stelmah.steamanalysis.exchangerate.repository.ExchangeRateRepository;
 import com.stelmah.steamanalysis.exchangerate.repository.ExchangeRateSnapshotRepository;
 import com.stelmah.steamanalysis.exchangerate.service.ExchangeRateService;
+import com.stelmah.steamanalysis.exchangerate.service.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -48,37 +49,50 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     public void fetchLatestExchangeRates() {
         log.debug("Fetching latest exchange rates");
         var requestCurrency = "USD";
-        var result = exchangeRateClient.getLatestExchangeRates(requestCurrency);
+        var responseDto = exchangeRateClient.getLatestExchangeRates(requestCurrency);
 
-        validateResult(result);
+        validateResult(responseDto);
 
+        var snapshot = mapAndSaveSnapshot(responseDto);
+        var exchangeRates = mapAndSaveExchangeRates(responseDto, snapshot);
+        log.info("Fetched latest exchange rates, snapshot({}), number of rates({})",
+                snapshot.getId(), exchangeRates.size());
+    }
+
+    private ExchangeRateSnapshot mapAndSaveSnapshot(ExchangeRateApiResponseDto responseDto) {
         var snapshot = new ExchangeRateSnapshot();
         snapshot.setServerTimestamp(LocalDateTime.now());
-        var vendorTimestamp = toLocalDateTime(result.getTimeLastUpdateUnix());
+        var vendorTimestamp = DateUtil.toLocalDateTime(responseDto.getTimeLastUpdateUnix());
         snapshot.setVendorTimestamp(vendorTimestamp);
         snapshot.setVendor(EXCHANGE_RATE_VENDOR_NAME);
-        snapshot = exchangeRateSnapshotRepository.save(snapshot);
+        return exchangeRateSnapshotRepository.save(snapshot);
+    }
 
-        for (var conversionRate: result.getConversionRates().entrySet()) {
-            var currency = conversionRate.getKey();
-            var rate = conversionRate.getValue();
+    private List<ExchangeRate> mapAndSaveExchangeRates(ExchangeRateApiResponseDto responseDto, ExchangeRateSnapshot snapshot) {
+        var exchangeRates = responseDto.getConversionRates().entrySet()
+                .stream()
+                .map(conversionRate -> {
+                    var currency = conversionRate.getKey();
+                    var rate = conversionRate.getValue();
 
-            if (BigDecimal.ZERO.equals(rate)) {
-                log.warn("Skipping conversion rate for pair {}-{}", requestCurrency, conversionRate.getKey());
-                continue;
-            }
+                    if (BigDecimal.ZERO.equals(rate)) {
+                        log.warn("Skipping conversion rate for pair {}-{}", responseDto.getBaseCode(), conversionRate.getKey());
+                        return null;
+                    }
 
-            var exchangeRate = new ExchangeRate();
-            exchangeRate.setBaseCurrency(requestCurrency);
-            exchangeRate.setTargetCurrency(currency);
-            exchangeRate.setTimestamp(vendorTimestamp);
-            exchangeRate.setSnapshot(snapshot);
-            exchangeRate.setRate(rate);
+                    var exchangeRate = new ExchangeRate();
+                    exchangeRate.setBaseCurrency(responseDto.getBaseCode());
+                    exchangeRate.setTargetCurrency(currency);
+                    exchangeRate.setTimestamp(snapshot.getVendorTimestamp());
+                    exchangeRate.setSnapshot(snapshot);
+                    exchangeRate.setRate(rate);
 
-            exchangeRateRepository.save(exchangeRate);
-        }
-        log.info("Fetched latest exchange rates, snapshot({}), number of rates({})",
-                snapshot.getId(), result.getConversionRates().size());
+                    return exchangeRate;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        // save in batches
+        return exchangeRateRepository.saveAll(exchangeRates);
     }
 
     private void validateResult(ExchangeRateApiResponseDto result) {
@@ -87,10 +101,4 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         }
     }
 
-    private static LocalDateTime toLocalDateTime(long unixTimestamp) {
-        return LocalDateTime.ofInstant(
-                Instant.ofEpochSecond(unixTimestamp),
-                ZoneId.systemDefault()
-        );
-    }
 }

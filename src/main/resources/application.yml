@@ -10,6 +10,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+          batch_versioned_data: true
+        order_inserts: true
 exchange:
   rate:
     api:
@@ -36,6 +42,7 @@ spring:
 #    properties:
 #      hibernate:
 #        format_sql: true
+#        generate_statistics: true
 #exchange:
 #  rate:
 #    scheduler:
