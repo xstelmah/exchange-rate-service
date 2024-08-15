@@ -22,6 +22,9 @@ exchange:
       key: ${EXCHANGE_RATE_API_KEY}
       url: ${EXCHANGE_RATE_API_URL:https://v6.exchangerate-api.com/v6}
     scheduler:
+      # Request Quota: 1500 per month (or ~50 per day).
+      # The exchange rate is updated every day at 00:00 on the free tier.
+      # We make requests more frequently in case the service was unavailable.
       # Runs every 5 hours at 5 minutes past the hour. (00:05, 05:05, 10:05, 15:05, 20:05)
       cron: 0 5 0/5 * * ?
 ---
