@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+exchange:
+  rate:
+    api:
+      key: ${EXCHANGE_RATE_API_KEY}
+      url: ${EXCHANGE_RATE_API_URL:https://v6.exchangerate-api.com/v6}
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/exchange_rate
+    username: user1
+    password: user1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
