@@ -8,6 +8,9 @@ exchange:
     api:
       key: ${EXCHANGE_RATE_API_KEY}
       url: ${EXCHANGE_RATE_API_URL:https://v6.exchangerate-api.com/v6}
+    scheduler:
+      # Runs every 5 hours at 5 minutes past the hour. (00:05, 05:05, 10:05, 15:05, 20:05)
+      cron: 0 5 0/5 * * ?
 ---
 spring:
   config:
@@ -24,3 +27,8 @@ spring:
 #    properties:
 #      hibernate:
 #        format_sql: true
+#exchange:
+#  rate:
+#    scheduler:
+#      # Runs every minute at the start of the minute. (e.g., 00:01, 00:02, ..., 23:59)
+#      cron: 0 0/1 * * * ?

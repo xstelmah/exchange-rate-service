@@ -6,5 +6,5 @@ public interface ExchangeRateService {
 
     ExchangeRateDto getLatestRates(String baseCurrency, String targetCurrency);
 
-    void fetchLatestExchangeRate();
+    void fetchLatestExchangeRates();
 }

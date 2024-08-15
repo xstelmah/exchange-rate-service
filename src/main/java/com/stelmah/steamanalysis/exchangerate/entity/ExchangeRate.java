@@ -26,13 +26,16 @@ public class ExchangeRate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String baseCurrency;
 
+    @Column(nullable = false)
     private String targetCurrency;
 
-    @Column(precision = 19, scale = 4)
+    @Column(precision = 19, scale = 4, nullable = false)
     private BigDecimal rate;
 
+    @Column(nullable = false)
     private LocalDateTime timestamp;
 
     @ManyToOne

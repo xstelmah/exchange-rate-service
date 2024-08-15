@@ -27,7 +27,7 @@ public class ExchangeRateController {
 
     @PostMapping("/fetch")
     public ResponseEntity<?> fetchLatestExchangeRate() {
-        exchangeRateService.fetchLatestExchangeRate();
+        exchangeRateService.fetchLatestExchangeRates();
 
         return ResponseEntity.noContent().build();
     }
