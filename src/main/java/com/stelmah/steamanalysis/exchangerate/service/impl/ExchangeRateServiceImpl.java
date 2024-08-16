@@ -38,7 +38,8 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .map(exchangeRateMapper::toDto)
                 .or(() -> findCrossRateUsingMainCurrency(MAIN_SERVICE_CURRENCY, baseCurrency, targetCurrency))
                 .map(exchangeRateDto -> swapExchangeRateIfNeeded(exchangeRateDto, baseCurrency, targetCurrency))
-                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND,
+                        "Exchange rate for pair (" + baseCurrency + "/" + targetCurrency + ") not found"));
     }
 
     @Override
