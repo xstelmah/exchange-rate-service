@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16.0:///exchange_rate
+    username: user
+    password: password
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+exchange:
+  rate:
+    api:
+      key: EXCHANGE_RATE_API_KEY
+      url: http://localhost
+    scheduler:
+      enabled: false
