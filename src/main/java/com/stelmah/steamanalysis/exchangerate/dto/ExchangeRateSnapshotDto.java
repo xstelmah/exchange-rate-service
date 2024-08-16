@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 public class ExchangeRateSnapshotDto {
 
-    private Long id;
     private LocalDateTime vendorTimestamp;
     private LocalDateTime serverTimestamp;
     private String vendor;

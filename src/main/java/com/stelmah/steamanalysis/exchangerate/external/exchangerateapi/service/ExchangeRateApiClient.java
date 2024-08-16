@@ -1,16 +1,17 @@
 package com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.service;
 
-import com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.config.ExchangeRateFeignConfig;
+import com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.config.ExchangeRateApiFeignConfig;
 import com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.dto.ExchangeRateApiResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "exchangeRateClient", url = "${exchange.rate.api.url}", configuration = ExchangeRateFeignConfig.class)
-public interface ExchangeRateClient {
+@FeignClient(name = "exchangeRateApiClient", url = "${exchange.rate.api.url}",
+        configuration = ExchangeRateApiFeignConfig.class, primary = false)
+public interface ExchangeRateApiClient {
 
     @GetMapping("/API_KEY/latest/{currency}")
-    ExchangeRateApiResponseDto getLatestExchangeRates(
+    ExchangeRateApiResponseDto fetchLatestExchangeRates(
             @PathVariable("currency") String baseCurrency
     );
 }

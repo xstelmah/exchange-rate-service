@@ -1,7 +1,9 @@
 package com.stelmah.steamanalysis.exchangerate.controller;
 
 import com.stelmah.steamanalysis.exchangerate.dto.ExchangeRateDto;
-import com.stelmah.steamanalysis.exchangerate.service.impl.ExchangeRateServiceImpl;
+import com.stelmah.steamanalysis.exchangerate.dto.ExchangeRateSnapshotDto;
+import com.stelmah.steamanalysis.exchangerate.facade.ExchangeRateFacade;
+import com.stelmah.steamanalysis.exchangerate.service.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ExchangeRateController {
 
-    private final ExchangeRateServiceImpl exchangeRateService;
+    private final ExchangeRateService exchangeRateService;
+    private final ExchangeRateFacade exchangeRateFacade;
 
     @GetMapping("/pair/{from}/{to}/latest")
     public ExchangeRateDto getLatestExchangeRate(
@@ -26,10 +29,10 @@ public class ExchangeRateController {
     }
 
     @PostMapping("/fetch")
-    public ResponseEntity<?> fetchLatestExchangeRate() {
-        exchangeRateService.fetchLatestExchangeRates();
+    public ResponseEntity<ExchangeRateSnapshotDto> fetchLatestExchangeRate() {
+        var snapshotDto = exchangeRateFacade.fetchAndSaveExchangeRates();
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(snapshotDto);
     }
 
 }

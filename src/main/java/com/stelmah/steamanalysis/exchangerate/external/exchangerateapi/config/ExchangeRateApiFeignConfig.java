@@ -4,7 +4,7 @@ import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
-public class ExchangeRateFeignConfig {
+public class ExchangeRateApiFeignConfig {
 
     @Value("${exchange.rate.api.key}")
     private String apiKey;

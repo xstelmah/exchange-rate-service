@@ -1,7 +1,7 @@
 package com.stelmah.steamanalysis.exchangerate.scheduler;
 
 
-import com.stelmah.steamanalysis.exchangerate.service.ExchangeRateService;
+import com.stelmah.steamanalysis.exchangerate.facade.ExchangeRateFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ExchangeRateScheduler {
 
-    private final ExchangeRateService exchangeRateService;
+    private final ExchangeRateFacade exchangeRateFacade;
 
     @Scheduled(cron = "${exchange.rate.scheduler.cron}")
     @SchedulerLock(name = "fetchLatestExchangeRatesLock", lockAtLeastFor = "PT15S", lockAtMostFor = "PT30S")
     public void fetchLatestExchangeRatesTask() {
         try {
-            exchangeRateService.fetchLatestExchangeRates();
+            exchangeRateFacade.fetchAndSaveExchangeRates();
         } catch (Exception e) {
             log.error("Failed to fetch latest exchange rates", e);
         }
