@@ -33,3 +33,4 @@ build/
 .vscode/
 /.env
 /.mvn/
+/docker/.postgres-data/
