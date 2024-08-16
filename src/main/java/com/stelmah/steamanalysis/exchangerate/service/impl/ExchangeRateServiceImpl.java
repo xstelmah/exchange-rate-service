@@ -123,12 +123,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         }
 
         // Calculate cross rate
-        BigDecimal newRate = targetRate.divide(baseRate, 4, RoundingMode.HALF_UP);
+        BigDecimal adjustedRate = targetRate.divide(baseRate, 4, RoundingMode.HALF_UP);
 
         var exchangeRateDto = ExchangeRateDto.builder()
                 .baseCurrency(baseCurrency)
                 .targetCurrency(targetCurrency)
-                .rate(newRate)
+                .rate(adjustedRate)
                 .timestamp(DateUtil.max(baseExchangeRate.getTimestamp(), targetExchangeRate.getTimestamp()))
                 .build();
         return Optional.of(exchangeRateDto);
