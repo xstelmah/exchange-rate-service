@@ -17,4 +17,14 @@ public final class DateUtil {
                 ZoneId.systemDefault()
         );
     }
+
+    public static LocalDateTime max(LocalDateTime dateTime1, LocalDateTime dateTime2) {
+        if (dateTime1 == null) {
+            return dateTime2;
+        }
+        if (dateTime2 == null) {
+            return dateTime1;
+        }
+        return dateTime1.isAfter(dateTime2) ? dateTime1 : dateTime2;
+    }
 }
