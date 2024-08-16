@@ -1,7 +1,6 @@
 package com.stelmah.steamanalysis.exchangerate.facade.impl;
 
 import com.stelmah.steamanalysis.exchangerate.dto.ExchangeRateSnapshotDto;
-import com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.service.ExchangeRateApiClient;
 import com.stelmah.steamanalysis.exchangerate.external.exchangerateapi.service.ExchangeRateApiService;
 import com.stelmah.steamanalysis.exchangerate.facade.ExchangeRateFacade;
 import com.stelmah.steamanalysis.exchangerate.service.ExchangeRateService;
