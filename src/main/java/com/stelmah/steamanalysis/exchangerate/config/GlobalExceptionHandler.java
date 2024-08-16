@@ -41,7 +41,8 @@ public class GlobalExceptionHandler {
                 request.getDescription(false)
         );
 
-        log.error(errorDto.toString(), ex);
+        log.debug(errorDto.toString());
+        log.trace("Exchange Rate API error occurred: ", ex);
 
         return new ResponseEntity<>(errorDto, ex.getStatusCode());
     }
