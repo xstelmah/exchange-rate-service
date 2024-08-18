@@ -34,3 +34,5 @@ build/
 /.env
 /.mvn/
 /docker/.postgres-data/
+/local/
+/logs/

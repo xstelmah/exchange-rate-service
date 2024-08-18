@@ -17,13 +17,15 @@ services:
       dockerfile: ./docker/Dockerfile
     ports:
       - 8080:8080
+    volumes:
+      - ./.exchange-rate-data/logs:/app/logs
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://exchange-rate-db:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_ROOT_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_ROOT_PASSWORD}
       - SPRING_FLYWAY_URL=jdbc:postgresql://exchange-rate-db:5432/${POSTGRES_DB}
       - SPRING_FLYWAY_USER=${POSTGRES_ROOT_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - SPRING_FLYWAY_PASSWORD=${POSTGRES_ROOT_PASSWORD}
       - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY}
       - |
         JAVA_OPTS=

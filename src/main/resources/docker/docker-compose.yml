@@ -1,15 +1,30 @@
 services:
+  exchange-rate-db:
+    image: postgres:16.4
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_ROOT_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_INITDB_ARGS='--auth-host=trust'
+    ports:
+      - 54376:5432
+    volumes:
+      - ./.postgres-data:/var/lib/postgresql/data
   exchange-rate-service:
     image: @docker.repository.name@:@deployment.version@
     ports:
-      - 8080:8080
+      - 8076:8076
+    volumes:
+      - ./.exchange-rate-data/logs:/app/logs
     environment:
+      - SERVER_PORT=8076
       - SPRING_DATASOURCE_URL=jdbc:postgresql://exchange-rate-db:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_ROOT_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_ROOT_PASSWORD}
       - SPRING_FLYWAY_URL=jdbc:postgresql://exchange-rate-db:5432/${POSTGRES_DB}
       - SPRING_FLYWAY_USER=${POSTGRES_ROOT_USER}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_ROOT_PASSWORD}
+      - SPRING_FLYWAY_PASSWORD=${POSTGRES_ROOT_PASSWORD}
       - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY}
       - |
         JAVA_OPTS=
