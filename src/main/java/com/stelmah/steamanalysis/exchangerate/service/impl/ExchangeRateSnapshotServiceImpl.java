@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -17,6 +19,11 @@ public class ExchangeRateSnapshotServiceImpl implements ExchangeRateSnapshotServ
 
     private final ExchangeRateSnapshotMapper exchangeRateSnapshotMapper;
     private final ExchangeRateSnapshotRepository exchangeRateSnapshotRepository;
+
+    @Override
+    public Optional<ExchangeRateSnapshot> findLatestByVendor(String vendor) {
+        return exchangeRateSnapshotRepository.findFirstByVendorOrderByVendorTimestampDesc(vendor);
+    }
 
     @Override
     @Transactional

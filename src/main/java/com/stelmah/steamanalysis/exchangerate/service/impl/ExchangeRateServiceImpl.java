@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +38,16 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         return exchangeRateRepository.findAnyLatestExchangeRateBetweenCurrencies(baseCurrency, targetCurrency, PageRequest.of(0, 1))
                 .map(exchangeRateMapper::toDto)
                 .or(() -> findCrossRateUsingMainCurrency(MAIN_SERVICE_CURRENCY, baseCurrency, targetCurrency))
+                .map(exchangeRateDto -> swapExchangeRateIfNeeded(exchangeRateDto, baseCurrency, targetCurrency))
+                .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND,
+                        "Exchange rate for pair (" + baseCurrency + "/" + targetCurrency + ") not found"));
+    }
+
+    @Override
+    public ExchangeRateDto getLatestRatesOnDate(String baseCurrency, String targetCurrency, LocalDate date) {
+        return exchangeRateRepository.findLatestExchangeRateBetweenCurrenciesAndDate(baseCurrency, targetCurrency, date, PageRequest.of(0, 1))
+                .map(exchangeRateMapper::toDto)
+                .or(() -> findCrossRateUsingMainCurrency(MAIN_SERVICE_CURRENCY, baseCurrency, targetCurrency, date))
                 .map(exchangeRateDto -> swapExchangeRateIfNeeded(exchangeRateDto, baseCurrency, targetCurrency))
                 .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND,
                         "Exchange rate for pair (" + baseCurrency + "/" + targetCurrency + ") not found"));
@@ -107,6 +118,67 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
         Optional<ExchangeRate> mainToTargetRate = exchangeRateRepository.findLatestByBaseAndTargetCurrencies(
                 mainCurrency, targetCurrency, PageRequest.of(0, 1));
+
+        if (mainToBaseRate.isEmpty() || mainToTargetRate.isEmpty()) {
+            return Optional.empty();
+        }
+
+        var baseExchangeRate = mainToBaseRate.get();
+        var targetExchangeRate = mainToTargetRate.get();
+
+        var baseRate = baseExchangeRate.getRate();
+        var targetRate = targetExchangeRate.getRate();
+
+        if (BigDecimal.ZERO.equals(baseRate)) {
+            log.warn("Exchange rate({}) has zero rate, skipping this entry.", baseExchangeRate.getId());
+            return Optional.empty();
+        }
+
+        // Calculate cross rate
+        BigDecimal adjustedRate = targetRate.divide(baseRate, 4, RoundingMode.HALF_UP);
+
+        var exchangeRateDto = ExchangeRateDto.builder()
+                .baseCurrency(baseCurrency)
+                .targetCurrency(targetCurrency)
+                .rate(adjustedRate)
+                .timestamp(DateUtil.max(baseExchangeRate.getTimestamp(), targetExchangeRate.getTimestamp()))
+                .build();
+        return Optional.of(exchangeRateDto);
+    }
+
+    /**
+     * Finds the exchange rate between two currencies by calculating the cross rate
+     * using a main currency as an intermediary.
+     * <p><strong>Example:</strong></p>
+     * <pre>
+     *     mainCurrency = "USD";
+     *     baseCurrency = "PLN";
+     *     targetCurrency = "RUB";
+     *
+     *     // Suppose the following exchange rates are available:
+     *     // USD -> PLN = 3.80
+     *     // USD -> RUB = 75.00
+     *
+     *     // The method will calculate the exchange rate between PLN and RUB as:
+     *     // PLN -> RUB = (USD -> RUB) / (USD -> PLN) = 75.00 / 3.80 ≈ 19.7368
+     *
+     *     // The resulting ExchangeRateDto will have:
+     *     // baseCurrency = "PLN"
+     *     // targetCurrency = "RUB"
+     *     // rate ≈ 19.7368
+     *     // timestamp = max(timestamp of USD -> PLN, timestamp of USD -> RUB)
+     * </pre>
+     */
+    private Optional<ExchangeRateDto> findCrossRateUsingMainCurrency(
+            String mainCurrency,
+            String baseCurrency,
+            String targetCurrency,
+            LocalDate date) {
+        Optional<ExchangeRate> mainToBaseRate = exchangeRateRepository.findLatestByBaseAndTargetCurrenciesAndDate(
+                mainCurrency, baseCurrency, date,PageRequest.of(0, 1));
+
+        Optional<ExchangeRate> mainToTargetRate = exchangeRateRepository.findLatestByBaseAndTargetCurrenciesAndDate(
+                mainCurrency, targetCurrency,  date,PageRequest.of(0, 1));
 
         if (mainToBaseRate.isEmpty() || mainToTargetRate.isEmpty()) {
             return Optional.empty();

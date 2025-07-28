@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,14 +27,25 @@ public class ExchangeRateFacadeImpl implements ExchangeRateFacade {
     @Override
     @Transactional
     public ExchangeRateSnapshotDto fetchAndSaveExchangeRates() {
-        log.info("Start fetching exchange rates for {} currency", BASE_REQUEST_CURRENCY);
-        var snapshotDto = exchangeRateApiService.fetchLatestExchangeRates(BASE_REQUEST_CURRENCY);
+        return fetchAndSaveExchangeRates(LocalDate.now(), BASE_REQUEST_CURRENCY);
+    }
 
-        var snapshot =  exchangeRateSnapshotService.saveSnapshotWithoutRates(snapshotDto);
+    @Override
+    @Transactional
+    public ExchangeRateSnapshotDto fetchAndSaveExchangeRates(LocalDate date, String currency) {
+        log.info("Start fetching exchange rates for {} currency on date {}", currency, date);
+        ExchangeRateSnapshotDto snapshotDto;
+        if (date.isEqual(LocalDate.now())) {
+            snapshotDto = exchangeRateApiService.fetchLatestExchangeRates(currency);
+        } else {
+            snapshotDto = exchangeRateApiService.fetchHistoricalExchangeRates(currency, date);
+        }
+
+        var snapshot = exchangeRateSnapshotService.saveSnapshotWithoutRates(snapshotDto);
 
         var rates = exchangeRateService.saveAll(snapshot, snapshotDto.getExchangeRates());
 
-        log.info("End fetching exchange rates for {} currency", BASE_REQUEST_CURRENCY);
+        log.info("End fetching exchange rates for {} currency on date {}", currency, date);
         return snapshotDto; // dto may differ from entity due to in-service filtration, mb we should return snapshot id only
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long> {
@@ -22,6 +23,20 @@ public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long
             PageRequest pageRequest
     );
 
+    @Query(""" 
+            SELECT er FROM ExchangeRate er
+            WHERE DATE(er.timestamp) = :date
+                AND ((er.baseCurrency = :currency1 AND er.targetCurrency = :currency2)
+                OR (er.baseCurrency = :currency2 AND er.targetCurrency = :currency1))
+            ORDER BY er.timestamp DESC
+            """)
+    Optional<ExchangeRate> findLatestExchangeRateBetweenCurrenciesAndDate(
+            @Param("currency1") String currency1,
+            @Param("currency2") String currency2,
+            @Param("date") LocalDate date,
+            PageRequest pageRequest
+    );
+
     @Query("""
             SELECT er FROM ExchangeRate er
             WHERE er.baseCurrency = :baseCurrency
@@ -31,6 +46,20 @@ public interface ExchangeRateRepository extends JpaRepository<ExchangeRate, Long
     Optional<ExchangeRate> findLatestByBaseAndTargetCurrencies(
             @Param("baseCurrency") String baseCurrency,
             @Param("targetCurrency") String targetCurrency,
+            PageRequest pageRequest
+    );
+
+    @Query("""
+            SELECT er FROM ExchangeRate er
+            WHERE DATE(er.timestamp) = :date
+                AND er.baseCurrency = :baseCurrency
+                AND er.targetCurrency = :targetCurrency
+            ORDER BY er.timestamp DESC
+            """)
+    Optional<ExchangeRate> findLatestByBaseAndTargetCurrenciesAndDate(
+            @Param("baseCurrency") String baseCurrency,
+            @Param("targetCurrency") String targetCurrency,
+            @Param("date") LocalDate date,
             PageRequest pageRequest
     );
 }
